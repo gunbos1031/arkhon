@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/gunbos1031/arkhon/web"
+	"github.com/gunbos1031/arkhon/rest"
 )
 
 func main() {
-	web.Start()
+	rest.Start()
 }
