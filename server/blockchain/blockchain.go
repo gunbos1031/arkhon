@@ -21,6 +21,8 @@ var b *blockchain
 func Blockchain() *blockchain {
 	once.Do(func() {
 		if b == nil {
+			// restore Blockchain
+			// if nil, AddBlock
 			b = &blockchain{
 				Height: 0,
 			}
@@ -41,7 +43,8 @@ func Blocks(b *blockchain) []*block {
 	var blocks []*block
 	hashCursor := b.NewestHash
 	for {
-		b, _ := findBlock(hashCursor)
+		b, err := findBlock(hashCursor)
+		utils.HandleErr(err)
 		blocks = append(blocks, b)
 		if b.PrevHash != "" {
 			hashCursor = b.PrevHash

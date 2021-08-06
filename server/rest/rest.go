@@ -10,8 +10,10 @@ import (
 	"github.com/gunbos1031/arkhon/blockchain"
 )
 
+type url string
+
 type urlResponse struct {
-	URL			string	`json:"url"`
+	URL			url		`json:"url"`
 	Method 		string	`json:"method"`
 	Description string	`json:"description"`
 }
@@ -20,25 +22,30 @@ type msgResponse struct {
 	Message string
 }
 
+func (u url) MarshalText() (text []byte, err error) {
+	url := fmt.Sprintf("https://blockminingsite-dqqwx.run.goorm.io%s", u)
+	return []byte(url), nil
+}
+
 func home(rw http.ResponseWriter, r *http.Request) {
 	resp := []urlResponse{
 		{
-			URL: "/",
+			URL: url("/"),
 			Method: "GET",
 			Description: "Describes action of each URL",
 		},	
 		{
-			URL: "/status",
+			URL: url("/status"),
 			Method: "GET",
 			Description: "Show blockchain information",
 		},
 		{
-			URL: "/blocks",
+			URL: url("/blocks"),
 			Method: "GET",
 			Description: "Show blocks of blockchain",
 		},
 		{
-			URL: "/blocks",
+			URL: url("/blocks"),
 			Method: "POST",
 			Description: "Add blocks to blockchain",
 		},

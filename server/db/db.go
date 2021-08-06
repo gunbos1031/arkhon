@@ -51,13 +51,6 @@ func SaveBlock(key, value []byte) {
 	utils.HandleErr(err)
 }
 
-// func GetBlockchain() {
-// 	err := db.View(func(tx *bolt.Tx) error {
-// 		bucket := tx.Bucket([]byte(dataBucket))
-// 		data := bucket.Get([]byte(checkpoint))
-// 	})
-// }
-
 func FindBlock(hash string) []byte {
 	var data []byte
 	err := db.View(func(tx *bolt.Tx) error {
