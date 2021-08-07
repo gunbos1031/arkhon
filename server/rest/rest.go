@@ -53,6 +53,13 @@ func home(rw http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(json.NewEncoder(rw).Encode(resp))
 }
 
+func urlLoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL, r.Method)
+		next.ServeHTTP(rw, r)
+	})
+}
+
 func status(rw http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Blockchain()))
 }
@@ -71,6 +78,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 
 func Start() {
 	router := mux.NewRouter()
+	router.Use(urlLoggingMiddleware)
 	
 	router.HandleFunc("/", home).Methods("GET")
 	router.HandleFunc("/status", status).Methods("GET")
