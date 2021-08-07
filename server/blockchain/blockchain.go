@@ -6,10 +6,6 @@ import (
 	"github.com/gunbos1031/arkhon/db"
 )
 
-const (
-	defaultDifficulty int = 3
-)
-
 type blockchain struct {
 	NewestHash 	string	`json:"newestHash"`
 	Height 		int		`json:"height"`
@@ -18,25 +14,20 @@ type blockchain struct {
 var once sync.Once
 var b *blockchain
 
-func Blockchain() *blockchain {
-	once.Do(func() {
-		if b == nil {
-			// restore Blockchain
-			// if nil, AddBlock
-			b = &blockchain{
-				Height: 0,
-			}
-		}
-	})
-	return b
+const (
+	defaultDifficulty int = 2
+)
+
+
+func (b *blockchain) AddBlock(payload string) {
+	block := createBlock(b.NewestHash, payload, b.Height, defaultDifficulty)
+	b.NewestHash = block.Hash
+	b.Height = block.Height
+	persistBlockchain(b)
 }
 
-func AddBlock(payload string) {
-	block := createBlock(payload, defaultDifficulty)
-	blockchain := Blockchain()
-	blockchain.NewestHash = block.Hash
-	blockchain.Height = block.Height
-	persistBlockchain(blockchain)
+func (b *blockchain) restore(data []byte) {
+	utils.FromBytes(data, b)
 }
 
 func Blocks(b *blockchain) []*block {
@@ -53,6 +44,21 @@ func Blocks(b *blockchain) []*block {
 		}
 	}
 	return blocks
+}
+
+func Blockchain() *blockchain {
+	once.Do(func() {
+		b = &blockchain{
+			Height: 0,
+		}
+		checkpoint := db.LoadBlockchain()
+		if checkpoint == nil {
+			b.AddBlock("Genesis")
+		} else {
+			b.restore(checkpoint)
+		}
+	})
+	return b
 }
 
 func persistBlockchain(b *blockchain) {

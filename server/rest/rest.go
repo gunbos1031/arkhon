@@ -65,7 +65,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		case "POST":
 		var payload msgResponse
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&payload))
-		blockchain.AddBlock(payload.Message)
+		blockchain.Blockchain().AddBlock(payload.Message)
 	}
 }
 

@@ -22,6 +22,20 @@ var (
 	ErrNotFound error = errors.New("block not found")
 )
 
+func (b *block) mine() {
+	target := strings.Repeat("0", b.Difficulty)
+	for {
+		b.Timestamp = int(time.Now().Unix())
+		hash := utils.Hash(b)
+		if strings.HasPrefix(hash, target) {
+			b.Hash = hash
+			break
+		} else {
+			b.Nonce++
+		}
+	}
+}
+
 func findBlock(hash string) (*block, error) {
 	blockBytes := db.FindBlock(hash)
 	if blockBytes == nil {
@@ -38,30 +52,16 @@ func persistBlock(b *block) {
 	db.SaveBlock(k, v)
 }
 
-func createBlock(payload string, diff int) *block {
+func createBlock(hash, payload string, height, diff int) *block {
 	b := &block{
 		Hash : "",
-		PrevHash: Blockchain().NewestHash,
+		PrevHash: hash,
 		Difficulty: diff,
 		Nonce: 0,
-		Height: Blockchain().Height + 1,
+		Height: height + 1,
 		Payload: payload,
 	}
 	b.mine()
 	persistBlock(b)
 	return b
-}
-
-func (b *block) mine() {
-	target := strings.Repeat("0", 2)
-	for {
-		b.Timestamp = int(time.Now().Unix())
-		hash := utils.Hash(b)
-		if strings.HasPrefix(hash, target) {
-			b.Hash = hash
-			break
-		} else {
-			b.Nonce++
-		}
-	}
 }
