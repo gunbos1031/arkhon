@@ -11,7 +11,7 @@ func usage() {
 	fmt.Println("Welcome to Arkhon Coin\n\n")
 	fmt.Println("Please use the following flags:\n\n")
 	fmt.Println("-port: 				Set the port of the server")
-	fmt.Println("-mode:					Choose between 'web' and 'rest'")
+	fmt.Println("-mode: 				Choose between 'web' and 'rest'")
 	os.Exit(1)
 }
 

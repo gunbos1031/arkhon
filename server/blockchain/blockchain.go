@@ -34,7 +34,7 @@ func Blocks(b *blockchain) []*block {
 	var blocks []*block
 	hashCursor := b.NewestHash
 	for {
-		b, err := findBlock(hashCursor)
+		b, err := FindBlock(hashCursor)
 		utils.HandleErr(err)
 		blocks = append(blocks, b)
 		if b.PrevHash != "" {

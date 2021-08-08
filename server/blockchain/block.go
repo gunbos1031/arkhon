@@ -36,7 +36,7 @@ func (b *block) mine() {
 	}
 }
 
-func findBlock(hash string) (*block, error) {
+func FindBlock(hash string) (*block, error) {
 	blockBytes := db.FindBlock(hash)
 	if blockBytes == nil {
 		return nil, ErrNotFound
