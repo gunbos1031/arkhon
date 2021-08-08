@@ -27,6 +27,10 @@ func (u url) MarshalText() (text []byte, err error) {
 	return []byte(url), nil
 }
 
+func makePortString(port int) string {
+	return fmt.Sprintf(":%d", port)
+}
+
 func home(rw http.ResponseWriter, r *http.Request) {
 	resp := []urlResponse{
 		{
@@ -53,6 +57,13 @@ func home(rw http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(json.NewEncoder(rw).Encode(resp))
 }
 
+func writeHeaderMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(rw, r)
+	})	
+}
+
 func urlLoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.URL, r.Method)
@@ -76,13 +87,13 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Start() {
+func Start(port int) {
 	router := mux.NewRouter()
-	router.Use(urlLoggingMiddleware)
+	router.Use(writeHeaderMiddleware, urlLoggingMiddleware)
 	
 	router.HandleFunc("/", home).Methods("GET")
 	router.HandleFunc("/status", status).Methods("GET")
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	fmt.Println("localhost:80 starts")
-	log.Fatal(http.ListenAndServe(":80", router))
+	log.Fatal(http.ListenAndServe(makePortString(port), router))
 }
