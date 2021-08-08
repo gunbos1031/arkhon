@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"log"
 	"fmt"
-	"strings"
 	"github.com/gunbos1031/arkhon/utils"
 	"github.com/gunbos1031/arkhon/blockchain"
 )
@@ -21,6 +20,10 @@ type urlResponse struct {
 
 type msgResponse struct {
 	Message string
+}
+
+type errResponse struct {
+	ErrMessage string	`json:"errMessage"`
 }
 
 func (u url) MarshalText() (text []byte, err error) {
@@ -89,10 +92,14 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 }
 
 func block(rw http.ResponseWriter, r *http.Request) {
-	hash := utils.Splitter(r.URL.Path, "/", 2)
+	vars := mux.Vars(r)
+	hash := vars["hash"]
 	b, err := blockchain.FindBlock(hash)
-	utils.HandleErr(err)
-	utils.HandleErr(json.NewEncoder(rw).Encode(b))
+	if err == blockchain.ErrNotFound {
+		utils.HandleErr(json.NewEncoder(rw).Encode(errResponse{fmt.Sprint(err)}))
+	} else {
+		utils.HandleErr(json.NewEncoder(rw).Encode(b))
+	}
 }
 
 func Start(port int) {

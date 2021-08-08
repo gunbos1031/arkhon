@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"crypto/sha256"
 	"encoding/json"
+	"strings"
 )
 
 func HandleErr(err error) {
@@ -32,7 +33,7 @@ func Hash(i interface{}) string {
 	return fmt.Sprintf("%x", hash)
 }
 
-func Splitter(s, sep string, idx int) string {
+func Splitter(s, sep string, i int) string {
 	r := strings.Split(s, sep)
 	if len(r) - 1 < i {
 		return ""
