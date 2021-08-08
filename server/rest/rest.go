@@ -89,7 +89,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 }
 
 func block(rw http.ResponseWriter, r *http.Request) {
-	hash := strings.Split(r.URL.Path, "/")[2]
+	hash := utils.Splitter(r.URL.Path, "/", 2)
 	b, err := blockchain.FindBlock(hash)
 	utils.HandleErr(err)
 	utils.HandleErr(json.NewEncoder(rw).Encode(b))
