@@ -7,22 +7,27 @@ import (
 )
 
 type blockchain struct {
-	NewestHash 	string	`json:"newestHash"`
-	Height 		int		`json:"height"`
+	NewestHash 			string	`json:"newestHash"`
+	Height 				int		`json:"height"`
+	CurrentDifficulty 	int		`json:"currentDifficulty`
 }
 
 var once sync.Once
 var b *blockchain
 
 const (
-	defaultDifficulty int = 2
+	defaultDifficulty 	int = 3
+	blockInterval 		int = 2
+	difficultyInterval 	int = 5
+	allowedRange 		int = 2
 )
 
 
 func (b *blockchain) AddBlock(payload string) {
-	block := createBlock(b.NewestHash, payload, b.Height, defaultDifficulty)
+	block := createBlock(b.NewestHash, payload, b.Height, getDifficulty())
 	b.NewestHash = block.Hash
 	b.Height = block.Height
+	b.CurrentDifficulty = block.Difficulty
 	persistBlockchain(b)
 }
 
@@ -59,6 +64,29 @@ func Blockchain() *blockchain {
 		}
 	})
 	return b
+}
+
+func getDifficulty() int {
+	if b.Height == 0 {
+		return defaultDifficulty
+	} else if b.Height % 5 == 0 {
+		return recaculateDifficulty()
+	} else {
+		return b.CurrentDifficulty
+	}
+}
+
+func recaculateDifficulty() int {
+	allBlocks := Blocks(b)
+	actualTime := (allBlocks[0].Timestamp/60) - (allBlocks[difficultyInterval-1].Timestamp/60)
+	expectedInterval := blockInterval * difficultyInterval
+	if actualTime < (expectedInterval - allowedRange) {
+		return b.CurrentDifficulty + 1
+	} else if actualTime > (expectedInterval + allowedRange) {
+		return b.CurrentDifficulty - 1
+	} else {
+		return b.CurrentDifficulty
+	}
 }
 
 func persistBlockchain(b *blockchain) {
