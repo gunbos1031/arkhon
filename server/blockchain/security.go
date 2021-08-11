@@ -8,6 +8,34 @@ import (
 	"crypto/x509"
 )
 
+func (t *Tx) sign(wallet *wallet) {
+	txIdAsBytes, err := hex.DecodeString(t.Id)
+	utils.HandleErr(err)
+	r, s, err := ecdsa.Sign(rand.Reader, wallet.privateKey, txIdAsBytes)
+	utils.HandleErr(err)
+	signature := utils.EncodeBigInts(r, s)
+	t.Signature = signature
+	for _, txIn := range t.TxIns {
+		txIn.Signature = signature
+	}
+}
+
+func doVerify(signature, id, addr string) bool {
+	r, s, err := utils.RestoreBigInts(signature)
+	utils.HandleErr(err)
+	x, y, err := utils.RestoreBigInts(addr)
+	utils.HandleErr(err)
+	publicKey := ecdsa.PublicKey{
+		Curve: elliptic.P256(),
+		X: x,
+		Y: y,
+	}
+	idAsBytes, err := hex.DecodeString(id)
+	utils.HandleErr(err)
+	ok := ecdsas.Verify(&publicKey, idAsBytes, r, s)
+	return ok
+}
+
 func generateKey() *ecdsa.PrivateKey {
 	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	utils.HandleErr(err)

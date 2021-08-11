@@ -1,7 +1,9 @@
 package blockchain
 
 import (
-
+	"github.com/gunbos1031/arkhon/utils"
+	"errors"
+	"time"
 )
 
 type Tx struct {
@@ -31,8 +33,75 @@ type UtxOut struct {
 	Amount		int			`json:"amount"`
 }
 
-func addTx(to string, amount int) {
-	from := Wallet().Address
+var (
+	ErrNoMoney = errors.New("Not enough money")
+	ErrInvalid = errors.New("Invalid transaction")
+)
+
+func (t *Tx) getId() {
+	t.Timestamp = int(time.Now().Unix())
+	hash := utils.Hash(t)
+	t.Id = hash
+}
+
+func AddTx(to string, amount int) {
+	tx, err := makeTx(Wallet(), to, amount)
+}
+
+func makeTx(wallet *wallet, to string, amount int) (*Tx, error) {
 	balance := getBalance()
-	// make TxIns
+	if balance < amount {
+		return nil, ErrNoMoney
+	}
+	
+	var txIns []*TxIn
+	var txOuts []*TxOut
+	total := 0
+	from := wallet.Address
+	uTxOuts := wallet.UtxOuts
+	for _, uTxOut := range uTxOuts {
+		if total >= amount {
+			break
+		}
+		txIn := &TxIn{
+			TxId: uTxOut.TxId,
+			Index: uTxOut.Index,
+			Signature: "",
+		}
+		txIns = append(txIns, txIn)
+		total += uTxOut.Amount
+	}
+	if change := total - amount; change != 0 {
+		txOuts = append(txOuts, &TxOut{from, change})
+	}
+	txOuts = append(txOuts, &TxOut{to, amount})
+	tx := &Tx{
+		Sender: from,
+		Recipient: to,
+		TxIns: txIns,
+		TxOuts: txOuts,
+	}
+	tx.getId()
+	tx.sign(wallet)
+	if !verify(tx) {
+		return nil, ErrInvalid
+	}
+	return tx, nil
+}
+
+func verify(t *Tx) bool {
+	valid := true
+	for _, txIn := range t.TxIns {
+		prevTx := findTx(Blockchain(), txIn.TxId)
+		if prevTx == nil {
+			valid = false
+			break
+		}
+		addr := prevTx.TxOuts[txIn.Index].Address
+		valid = doVerify(txIn.Signature, tx.Id, addr)
+		if !valid {
+			break
+		}
+	}
+	return valid
 }

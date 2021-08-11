@@ -46,3 +46,17 @@ func EncodeBigInts(a, b *big.Int) string {
 	z := append(a.Bytes(), b.Bytes()...)
 	return fmt.Sprintf("%x", z)
 }
+
+func RestoreBigInts(payload string) (*big.Int, *big.Int, error){
+	payloadAsBytes, err := hex.DecodeString(payload)
+	if err != nil {
+		return nil, nil, err
+	}
+	firstHalves := payloadAsBytes[:len(payloadAsBytes)/2]
+	secondHalves := payloadAsBytes[len(payloadAsBytes)/2:]
+	a := &big.Int{}
+	b := &big.Int{}
+	a.SetBytes(firstHalves)
+	b.SetBytes(secondHalves)
+	return a, b, nil
+}

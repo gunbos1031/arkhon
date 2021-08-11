@@ -93,3 +93,20 @@ func persistBlockchain(b *blockchain) {
 	data := utils.ToBytes(b)
 	db.SaveBlockchain(data)
 }
+
+func txs(b *blockchain) []*Tx {
+	var txs []*Tx
+	for _, block := range Blocks(b) {
+		txs = append(txs, block.Transactions...)
+	}
+	return txs
+}
+
+func findTx(b *blockchain, targetId string) *Tx {
+	for _, tx := range txs(b) {
+		if tx.Id == targetId {
+			return tx
+		}
+	}
+	return nil
+}
