@@ -57,6 +57,31 @@ func home(rw http.ResponseWriter, r *http.Request) {
 			Method: "POST",
 			Description: "Add blocks to blockchain",
 		},
+		{
+			URL: url("/blocks/{hash}"),
+			Method: "GET",
+			Description: "Show block according to hash",
+		},
+		{
+			URL: url("/wallet"),
+			Method: "GET",
+			Description: "Show wallet information",
+		},
+		{
+			URL: url("/transaction"),
+			Method: "POST",
+			Description: "Add transaction to mempool",
+		},
+		{
+			URL: url("/mempool"),
+			Method: "GET",
+			Description: "Show unconfirmed transactions",
+		},
+		{
+			URL: url("/mempool/{txid}"),
+			Method: "GET",
+			Description: "Show unconfirmed transactions according to TxId",
+		},	
 	}
 	utils.HandleErr(json.NewEncoder(rw).Encode(resp))
 }
