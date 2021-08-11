@@ -10,6 +10,7 @@ import (
 type wallet struct {
 	privateKey 	*ecdsa.PrivateKey
 	Address		string
+	UtxOuts		[]*UtxOut
 }
 
 const (
@@ -53,4 +54,12 @@ func readFile() []byte {
 func persist(key *ecdsa.PrivateKey) {
 	b := privToBytes(key)
 	utils.HandleErr(os.WriteFile(walletName, b, 0644))
+}
+
+func getBalance() int {
+	total := 0
+	for _, uTxOut := range w.UtxOuts {
+		total += utxOut.Amount
+	}
+	return total
 }
