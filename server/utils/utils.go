@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"strings"
+	"math/big"
 )
 
 func HandleErr(err error) {
@@ -39,4 +40,9 @@ func Splitter(s, sep string, i int) string {
 		return ""
 	}
 	return r[i]
+}
+
+func EncodeBigInts(a, b *big.Int) string {
+	z := append(a.Bytes(), b.Bytes()...)
+	return fmt.Sprintf("%x", z)
 }
