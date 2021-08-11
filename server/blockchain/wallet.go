@@ -30,7 +30,6 @@ func Wallet() *wallet {
 		}
 		w.Address = aFromKey(w.privateKey)
 	}
-	fmt.Println(w.Address)
 	return w
 }
 

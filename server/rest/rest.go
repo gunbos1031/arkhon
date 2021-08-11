@@ -127,6 +127,10 @@ func block(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func wallet(rw http.ResponseWriter, r *http.Request) {
+	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Wallet()))
+}
+
 func Start(port int) {
 	router := mux.NewRouter()
 	router.Use(writeHeaderMiddleware, urlLoggingMiddleware)
@@ -135,6 +139,7 @@ func Start(port int) {
 	router.HandleFunc("/status", status).Methods("GET")
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
+	router.HandleFunc("/wallet", wallet).Methods("GET")
 	fmt.Println("localhost:80 starts")
 	log.Fatal(http.ListenAndServe(makePortString(port), router))
 }
