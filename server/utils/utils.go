@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"crypto/sha256"
 	"encoding/json"
+	"encoding/hex"
 	"strings"
 	"math/big"
 )

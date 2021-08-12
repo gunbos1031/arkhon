@@ -4,13 +4,12 @@ import (
 	"github.com/gunbos1031/arkhon/utils"
 	"crypto/ecdsa"
 	"os"
-	"fmt"
 )
 
 type wallet struct {
 	privateKey 	*ecdsa.PrivateKey
 	Address		string
-	UtxOuts		[]*UtxOut
+	UtxOuts		map[string]*UtxOut
 }
 
 const (
@@ -18,6 +17,32 @@ const (
 )
 
 var w *wallet
+
+func (w *wallet) addUtxOut(tx *Tx) {
+	for idx, txOut := range tx.TxOuts {
+		if !isMine(w, txOut.Recipient) {
+			// should treat another addr at future
+			continue
+		}
+		uTxOut := &UtxOut{
+			TxId: tx.Id, 
+			Index: idx, 
+			Amount: txOut.Amount,
+		}
+		uTxOut.getId()
+		w.UtxOuts[uTxOut.Id] = uTxOut
+	}	
+}
+
+func (w *wallet) setUtxOut(uTxos map[string]*UtxOut) {
+	w.UtxOuts = uTxos
+}
+
+func (w *wallet) restore() {
+	b := readFile()
+	privKey := restorePrivKey(b)
+	w.privateKey = privKey
+}
 
 func Wallet() *wallet {
 	if w == nil {
@@ -32,12 +57,6 @@ func Wallet() *wallet {
 		w.Address = aFromKey(w.privateKey)
 	}
 	return w
-}
-
-func (w *wallet) restore() {
-	b := readFile()
-	privKey := restorePrivKey(b)
-	w.privateKey = privKey
 }
 
 func hasWalletFile() bool {
@@ -59,7 +78,11 @@ func persist(key *ecdsa.PrivateKey) {
 func getBalance() int {
 	total := 0
 	for _, uTxOut := range w.UtxOuts {
-		total += utxOut.Amount
+		total += uTxOut.Amount
 	}
 	return total
+}
+
+func isMine(w *wallet, addr string) bool {
+	return w.Address == addr
 }

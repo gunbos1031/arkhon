@@ -6,19 +6,8 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/hex"
 )
-
-func (t *Tx) sign(wallet *wallet) {
-	txIdAsBytes, err := hex.DecodeString(t.Id)
-	utils.HandleErr(err)
-	r, s, err := ecdsa.Sign(rand.Reader, wallet.privateKey, txIdAsBytes)
-	utils.HandleErr(err)
-	signature := utils.EncodeBigInts(r, s)
-	t.Signature = signature
-	for _, txIn := range t.TxIns {
-		txIn.Signature = signature
-	}
-}
 
 func doVerify(signature, id, addr string) bool {
 	r, s, err := utils.RestoreBigInts(signature)
@@ -32,7 +21,7 @@ func doVerify(signature, id, addr string) bool {
 	}
 	idAsBytes, err := hex.DecodeString(id)
 	utils.HandleErr(err)
-	ok := ecdsas.Verify(&publicKey, idAsBytes, r, s)
+	ok := ecdsa.Verify(&publicKey, idAsBytes, r, s)
 	return ok
 }
 

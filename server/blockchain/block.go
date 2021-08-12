@@ -9,13 +9,13 @@ import (
 )
 
 type block struct {
-	Hash		string	`json:"hash"`
-	PrevHash	string	`json:"prevHash"`
-	Timestamp	int		`json:"timestamp"`
-	Difficulty	int		`json:"difficulty"`
-	Nonce		int		`json:"nonce"`
-	Height		int		`json:"height"`
-	Payload		string	`json:"payload"`
+	Hash			string	`json:"hash"`
+	PrevHash		string	`json:"prevHash"`
+	Timestamp		int		`json:"timestamp"`
+	Difficulty		int		`json:"difficulty"`
+	Nonce			int		`json:"nonce"`
+	Height			int		`json:"height"`
+	Transactions	[]*Tx	`json:"transaction"`
 }
 
 var (
@@ -59,7 +59,6 @@ func createBlock(hash, payload string, height, diff int) *block {
 		Difficulty: diff,
 		Nonce: 0,
 		Height: height + 1,
-		Payload: payload,
 	}
 	b.mine()
 	persistBlock(b)
