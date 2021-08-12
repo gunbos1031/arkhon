@@ -130,14 +130,16 @@ func verify(t *Tx) bool {
 }
 
 func makeCoinbaseTx() *Tx {
+	wallet := Wallet()
 	txIn := &TxIn{"", -1, ""}
-	txOut := &TxOut{Wallet().Address, mineReward}
+	txOut := &TxOut{wallet.Address, mineReward}
 	tx := &Tx{
 		Sender: "COINBASE",
-		Recipient: Wallet().Address,
+		Recipient: wallet.Address,
 		TxIns: []*TxIn{txIn},
 		TxOuts: []*TxOut{txOut},
 	}
 	tx.getId()
+	wallet.addUtxOut(tx)
 	return tx
 }

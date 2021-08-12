@@ -12,6 +12,11 @@ type wallet struct {
 	UtxOuts		map[string]*UtxOut
 }
 
+type walletStorage struct {
+	PrivAsBytes 	[]byte
+	UtxOutsAsBytes	[]byte
+}
+
 const (
 	walletName = "cain.wallet"
 )
@@ -31,7 +36,7 @@ func (w *wallet) addUtxOut(tx *Tx) {
 		}
 		uTxOut.getId()
 		w.UtxOuts[uTxOut.Id] = uTxOut
-	}	
+	}
 }
 
 func (w *wallet) setUtxOut(uTxos map[string]*UtxOut) {
@@ -39,9 +44,14 @@ func (w *wallet) setUtxOut(uTxos map[string]*UtxOut) {
 }
 
 func (w *wallet) restore() {
-	b := readFile()
-	privKey := restorePrivKey(b)
+	storageAsBytes := readFile()
+	var storage walletStorage
+	var uTxos map[string]*UtxOut
+	utils.FromBytes(storageAsBytes, &storage)
+	privKey := restorePrivKey(storage.PrivAsBytes)
+	utils.FromBytes(storage.UtxOutsAsBytes, &uTxos)
 	w.privateKey = privKey
+	w.UtxOuts = uTxos
 }
 
 func Wallet() *wallet {
@@ -52,11 +62,20 @@ func Wallet() *wallet {
 		} else {
 			key := generateKey()
 			w.privateKey = key
-			persist(w.privateKey)
+			w.UtxOuts = make(map[string]*UtxOut)
+			Persist(w)
 		}
 		w.Address = aFromKey(w.privateKey)
 	}
 	return w
+}
+
+func Persist(wallet *wallet) {
+	privAsBytes := privToBytes(wallet.privateKey)
+	uTxoAsbytes := utils.ToBytes(wallet.UtxOuts)
+	storage := walletStorage{privAsBytes, uTxoAsbytes}
+	storageAsBytes := utils.ToBytes(storage)
+	utils.HandleErr(os.WriteFile(walletName, storageAsBytes, 0644))
 }
 
 func hasWalletFile() bool {
@@ -65,14 +84,9 @@ func hasWalletFile() bool {
 }
 
 func readFile() []byte {
-	b, err := os.ReadFile(walletName)
+	storageAsBytes, err := os.ReadFile(walletName)
 	utils.HandleErr(err)
-	return b
-}
-
-func persist(key *ecdsa.PrivateKey) {
-	b := privToBytes(key)
-	utils.HandleErr(os.WriteFile(walletName, b, 0644))
+	return storageAsBytes
 }
 
 func getBalance() int {

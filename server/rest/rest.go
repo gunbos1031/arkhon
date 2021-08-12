@@ -78,11 +78,6 @@ func home(rw http.ResponseWriter, r *http.Request) {
 			Method: "GET",
 			Description: "Show unconfirmed transactions",
 		},
-		{
-			URL: url("/mempool/{txid}"),
-			Method: "GET",
-			Description: "Show unconfirmed transactions according to TxId",
-		},	
 	}
 	utils.HandleErr(json.NewEncoder(rw).Encode(resp))
 }
@@ -136,6 +131,10 @@ func transaction(rw http.ResponseWriter, r *http.Request) {
 	blockchain.Mempool().AddTx(resp.To, resp.Amount)
 }
 
+func mempool(rw http.ResponseWriter, r *http.Request) {
+	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Mempool().Txs))
+}
+
 func Start(port int) {
 	router := mux.NewRouter()
 	router.Use(writeHeaderMiddleware, urlLoggingMiddleware)
@@ -146,6 +145,7 @@ func Start(port int) {
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
 	router.HandleFunc("/wallet", wallet).Methods("GET")
 	router.HandleFunc("/transaction", transaction).Methods("POST")
+	router.HandleFunc("/mempool", mempool).Methods("GET")
 	fmt.Println("localhost:80 starts")
 	log.Fatal(http.ListenAndServe(makePortString(port), router))
 }
