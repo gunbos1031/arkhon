@@ -18,8 +18,9 @@ type urlResponse struct {
 	Description string	`json:"description"`
 }
 
-type msgResponse struct {
-	Message string
+type txResponse struct {
+	To			string
+	Amount		int
 }
 
 type errResponse struct {
@@ -110,9 +111,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		blocks := blockchain.Blocks(blockchain.Blockchain())
 		utils.HandleErr(json.NewEncoder(rw).Encode(blocks))
 		case "POST":
-		var payload msgResponse
-		utils.HandleErr(json.NewDecoder(r.Body).Decode(&payload))
-		blockchain.Blockchain().AddBlock(payload.Message)
+		blockchain.Blockchain().AddBlock()
 	}
 }
 
@@ -131,6 +130,12 @@ func wallet(rw http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Wallet()))
 }
 
+func transaction(rw http.ResponseWriter, r *http.Request) {
+	var resp txResponse
+	utils.HandleErr(json.NewDecoder(r.Body).Decode(&resp))
+	blockchain.Mempool().AddTx(resp.To, resp.Amount)
+}
+
 func Start(port int) {
 	router := mux.NewRouter()
 	router.Use(writeHeaderMiddleware, urlLoggingMiddleware)
@@ -140,6 +145,7 @@ func Start(port int) {
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
 	router.HandleFunc("/wallet", wallet).Methods("GET")
+	router.HandleFunc("/transaction", transaction).Methods("POST")
 	fmt.Println("localhost:80 starts")
 	log.Fatal(http.ListenAndServe(makePortString(port), router))
 }

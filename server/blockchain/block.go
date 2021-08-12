@@ -36,6 +36,18 @@ func (b *block) mine() {
 	}
 }
 
+func (b *block) txsToConfirm() {
+	mem := Mempool()
+	txs := []*Tx{}
+	coinBaseTx := makeCoinbaseTx()
+	txs = append(txs, coinBaseTx)
+	for _, tx := range mem.Txs {
+		txs = append(txs, tx)
+	}
+	b.Transactions = txs
+	mem.Txs = make(map[string]*Tx)
+}
+
 func FindBlock(hash string) (*block, error) {
 	blockBytes := db.FindBlock(hash)
 	if blockBytes == nil {
@@ -52,15 +64,15 @@ func persistBlock(b *block) {
 	db.SaveBlock(k, v)
 }
 
-func createBlock(hash, payload string, height, diff int) *block {
+func createBlock(hash string, height, diff int) *block {
 	b := &block{
-		Hash : "",
 		PrevHash: hash,
 		Difficulty: diff,
 		Nonce: 0,
 		Height: height + 1,
 	}
 	b.mine()
+	b.txsToConfirm()
 	persistBlock(b)
 	return b
 }

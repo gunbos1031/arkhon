@@ -23,8 +23,8 @@ const (
 )
 
 
-func (b *blockchain) AddBlock(payload string) {
-	block := createBlock(b.NewestHash, payload, b.Height, getDifficulty())
+func (b *blockchain) AddBlock() {
+	block := createBlock(b.NewestHash, b.Height, getDifficulty())
 	b.NewestHash = block.Hash
 	b.Height = block.Height
 	b.CurrentDifficulty = block.Difficulty
@@ -58,7 +58,7 @@ func Blockchain() *blockchain {
 		}
 		checkpoint := db.LoadBlockchain()
 		if checkpoint == nil {
-			b.AddBlock("Genesis")
+			b.AddBlock()
 		} else {
 			b.restore(checkpoint)
 		}

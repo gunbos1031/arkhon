@@ -42,6 +42,8 @@ var (
 	ErrInvalid = errors.New("Invalid transaction")
 )
 
+const mineReward int = 50
+
 func (t *Tx) getId() {
 	t.Timestamp = int(time.Now().Unix())
 	hash := utils.Hash(t)
@@ -125,4 +127,17 @@ func verify(t *Tx) bool {
 		}
 	}
 	return valid
+}
+
+func makeCoinbaseTx() *Tx {
+	txIn := &TxIn{"", -1, ""}
+	txOut := &TxOut{Wallet().Address, mineReward}
+	tx := &Tx{
+		Sender: "COINBASE",
+		Recipient: Wallet().Address,
+		TxIns: []*TxIn{txIn},
+		TxOuts: []*TxOut{txOut},
+	}
+	tx.getId()
+	return tx
 }
