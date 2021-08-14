@@ -22,3 +22,4 @@ yarn-error.log*
 
 # go
 *.db
+*.wallet

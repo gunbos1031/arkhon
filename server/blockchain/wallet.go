@@ -37,10 +37,12 @@ func (w *wallet) addUtxOut(tx *Tx) {
 		uTxOut.getId()
 		w.UtxOuts[uTxOut.Id] = uTxOut
 	}
+	persist(w)
 }
 
 func (w *wallet) setUtxOut(uTxos map[string]*UtxOut) {
 	w.UtxOuts = uTxos
+	persist(w)
 }
 
 func (w *wallet) restore() {
@@ -63,14 +65,14 @@ func Wallet() *wallet {
 			key := generateKey()
 			w.privateKey = key
 			w.UtxOuts = make(map[string]*UtxOut)
-			Persist(w)
+			persist(w)
 		}
 		w.Address = aFromKey(w.privateKey)
 	}
 	return w
 }
 
-func Persist(wallet *wallet) {
+func persist(wallet *wallet) {
 	privAsBytes := privToBytes(wallet.privateKey)
 	uTxoAsbytes := utils.ToBytes(wallet.UtxOuts)
 	storage := walletStorage{privAsBytes, uTxoAsbytes}
